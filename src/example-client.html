@@ -126,7 +126,8 @@
 
     var messages = [];
     const request = { idCoach: '18', hash: '124', coach: "Sofia Rodriguez", idPaciente: '86586', paciente: 'Andres Mora Castro', soyPaciente: false };
-    const chat = io.connect("http://192.168.1.67:3001/chat",
+    const ip;// YOU IP;
+    const chat = io.connect(`http://${ip}:3001/chat`,
       {
         reconnection: false,
         transportOptions: {
