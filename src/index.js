@@ -16,7 +16,7 @@ const server = app.listen(app.get("port"), () =>
 );
 
 const io = require("socket.io")(server);
-io.set('transports', ['websocket']);
+io.set("transports", ["websocket"]);
 const rooms = [];
 createRoom();
 
@@ -65,11 +65,11 @@ function createRoom() {
       if (!success) return;
 
       socket.join(hash);
-    //   sessionHash = hash;
+      //   sessionHash = hash;
       console.log("un nuevo usuario a entrado al chat");
 
       soyPaciente
-        ? socket.emit("welcome", {
+        ? chat.emit("welcome", {
             userName: idCoach,
             message: `Hola ${paciente} soy ${coach}, tu coach`
           })
@@ -90,7 +90,9 @@ function createRoom() {
 
       function validationRoom(socket, request) {
         const { idCoach, paciente, soyPaciente, coach, hash } = request;
-        const foundRoom = rooms.find( room => room.hash == hash && room.admin == idCoach );
+        const foundRoom = rooms.find(
+          room => room.hash == hash && room.admin == idCoach
+        );
         if (!foundRoom) {
           rejected(socket, "Credenciales incorrectas");
           return false;
@@ -98,28 +100,42 @@ function createRoom() {
 
         if (foundRoom.inChat !== null) {
           if (foundRoom.inChat.length <= 2) {
-            const registeredPatient = foundRoom.inChat.find(user => user.soyPaciente == true);
-            const registeredMultiCoach = foundRoom.inChat.filter(user => user.soyPaciente == false);
+            const registeredPatient = foundRoom.inChat.find(
+              user => user.soyPaciente == true
+            );
+            const registeredMultiCoach = foundRoom.inChat.filter(
+              user => user.soyPaciente == false
+            );
 
-            if (registeredPatient !== undefined && registeredPatient.soyPaciente == soyPaciente) {
+            if (
+              registeredPatient !== undefined &&
+              registeredPatient.soyPaciente == soyPaciente
+            ) {
               rejected(socket, "Ya existe un paciente registrado en esta sala");
               return false;
             } else if (registeredMultiCoach.length > 1) {
-            //   rejected(socket, "Ya existe un coach registrado en esta sala");
-            //   return false;
-             return true;
+              //   rejected(socket, "Ya existe un coach registrado en esta sala");
+              //   return false;
+              return true;
             } else {
               foundRoom.inChat.push(request);
               chat.emit("chatInit", true);
               return true;
             }
-          }else {
-            rejected(socket,`Actualmente esta sala esta completa coach: ${coach} , atendiendo paciente: ${paciente}`);
+          } else {
+            rejected(
+              socket,
+              `Actualmente esta sala esta completa coach: ${coach} , atendiendo paciente: ${paciente}`
+            );
             return false;
           }
         } else {
           foundRoom.inChat = [request];
-          console.log(`se agrego ${request.soyPaciente ? request.paciente : request.coach} a la sala ${foundRoom.admin}`);
+          console.log(
+            `se agrego ${
+              request.soyPaciente ? request.paciente : request.coach
+            } a la sala ${foundRoom.admin}`
+          );
           return true;
         }
       }
@@ -129,30 +145,43 @@ function createRoom() {
         console.log("usuario eliminado , razon :", msg);
         return socket.disconnect();
       }
-
     });
 
     socket.on("disconnect", () => {
-        console.log("usuario desconectado");
+      const hash = socket.handshake.headers["hash"];
+      if(!!hash){
         chat.emit("deleteUser", "Usuario desconectado de la sala");
-        const hash = socket.handshake.headers["hash"];
-        const soyPaciente = socket.handshake.headers["soyPaciente"];
+        console.log("usuario desconectado");
+      }
 
-        socket.leave();
-        const index = rooms.findIndex(r => r.hash == hash);
-        if(index!== -1){
-         const roomFound = rooms[index];
-         const positionPaciente  = roomFound.inChat.findIndex(paciente => paciente.soyPaciente == true)
-          if(soyPaciente && positionPaciente != -1) rooms[index]['inChat'].slice(positionPaciente, 1);
-          if(roomFound.inChat.length <= 1 && positionPaciente != -1) deleteRoom(index);
-        }
+      const soyPaciente = socket.handshake.headers["soypaciente"];
+      const index = rooms.findIndex(r => r.hash == hash);
+
+      if (index !== -1) {
+        const roomFound = rooms[index];
+        const positionPaciente = roomFound.inChat.findIndex(paciente => paciente.soyPaciente == true);
+        var inChat = rooms[index]["inChat"];
+        if (soyPaciente == 'true' && positionPaciente != -1) rooms[index]["inChat"] = inChat.filter(user => user.soyPaciente == false);
+        if (rooms[index]["inChat"].length <= 1 && !soyPaciente) deleteRoom(index);
+        console.log("rooms", rooms);
+      }
+    });
+
+    socket.on("logout", request => {
+      const { idCoach, hash } = request;
+      console.log(` ${idCoach} termino chat`);
+      chat.emit("deleteUser", "Usuario desconectado de la sala");
+      const index = rooms.findIndex(r => r.hash == hash);
+      deleteRoom(index);
     });
 
     function deleteRoom(index) {
       const deleted = rooms.slice(index, 1);
       deleted.length
         ? console.log(`sala con admin : ${deleted[0].admin} ha sido eliminada`)
-        : console.log(`Sala con hash : ${hash} no se encontro dentro de las salas registradas`);
+        : console.log(
+            `Sala con hash : ${hash} no se encontro dentro de las salas registradas`
+          );
     }
   });
 }

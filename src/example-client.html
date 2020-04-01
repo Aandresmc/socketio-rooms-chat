@@ -126,15 +126,15 @@
 
     var messages = [];
     const request = { idCoach: '18', hash: '124', coach: "Sofia Rodriguez", idPaciente: '86586', paciente: 'Andres Mora Castro', soyPaciente: false };
-    const ip = "161.35.2.62";
-    const chat = io.connect(`${ip}:3001/chat`,
+    const ip = "192.168.1.67";
+    const chat = io.connect(`http://${ip}:3001/chat`,
       {transports: ['websocket'],
         reconnection: false,
         transportOptions: {
           polling: {
             extraHeaders: {
               hash: request.hash,
-              soyPaciente : request.soyPaciente
+              soypaciente : request.soyPaciente
             }
           }
         }
@@ -143,7 +143,7 @@
     createRoom();
 
     async function createRoom() {
-      const resp = await fetch('http://161.35.2.62:3001/createRoom', {
+      const resp = await fetch('http://127.0.0.1:3001/createRoom', {
         method: 'POST',
         headers: {
           'Accept': 'application/json',
@@ -162,6 +162,10 @@
         chat.emit("sendMessage", { userName: request.idCoach, message: message });
       }
       $('#input_message').val('');
+    }
+
+    function logout() {
+      chat.emit("logout", { idCoach: request.idCoach, hash: request.hash });
     }
 
 
