@@ -104,10 +104,17 @@
       background-color: #000;
       color: white;
     }
+    #logout{
+      right: initial!important;
+      left: 10!important;
+    }
   </style>
 </head>
 
 <body>
+  <button class="btn-black" id="logout" type="button" onclick="logout()">
+    <ion-icon name="log-out-outline"></ion-icon>
+  </button>
   <button class="btn-black" id="join" type="button" onclick="joinRoom()"><span>Unirse</span>
     <ion-icon name="chatbubbles-outline"></ion-icon>
   </button>

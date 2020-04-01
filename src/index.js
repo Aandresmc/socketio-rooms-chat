@@ -171,6 +171,7 @@ function createRoom() {
       const { idCoach, hash } = request;
       console.log(` ${idCoach} termino chat`);
       chat.emit("deleteUser", "Usuario desconectado de la sala");
+      socket.leaveAll();
       const index = rooms.findIndex(r => r.hash == hash);
       deleteRoom(index);
     });
