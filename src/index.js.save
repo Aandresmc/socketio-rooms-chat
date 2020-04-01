@@ -16,12 +16,11 @@ const server = app.listen(app.get("port"), () =>
 );
 
 const io = require("socket.io")(server);
-io.set('transports', ['websocket']);
+
 const rooms = [];
 createRoom();
 
-app.get("/chat-coach", (_, res) =>
-  res.sendFile(path.resolve(__dirname + "/example-client.html"))
+app.get("/chat-coach", (_, res) =  res.sendFile(path.resolve(__dirname + "/example-client.html"))
 );
 app.get("/list-chats", (_, res) => res.json(rooms));
 
